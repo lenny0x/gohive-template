@@ -1,0 +1,18 @@
+# demo-admin 测试环境配置
+
+[app]
+env = "test"
+port = 18081
+
+[database]
+host = "test-db.internal"
+dbname = "app_test"
+user = "test_user"
+
+[redis]
+host = "test-redis.internal"
+db = 1
+
+[log]
+level = "info"
+format = "json"

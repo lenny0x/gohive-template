@@ -1,0 +1,13 @@
+# demo-ws-server 测试环境配置
+
+[app]
+env = "test"
+port = 18082
+
+[redis]
+host = "test-redis.internal"
+db = 1
+
+[log]
+level = "info"
+format = "json"

@@ -1,0 +1,12 @@
+# demo-admin 开发环境配置
+
+[app]
+env = "development"
+
+[database]
+host = "localhost"
+dbname = "app_dev"
+
+[log]
+level = "debug"
+format = "console"

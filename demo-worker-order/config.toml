@@ -1,0 +1,29 @@
+# demo-worker-order 基础配置
+
+[app]
+name = "demo-worker-order"
+env = "development"
+
+[database]
+host = "localhost"
+port = 3306
+user = "root"
+password = ""
+dbname = "app"
+max_open_conns = 50
+max_idle_conns = 5
+
+[redis]
+host = "localhost"
+port = 6379
+password = ""
+db = 0
+pool_size = 10
+
+[log]
+level = "info"
+format = "console"
+
+[worker]
+concurrency = 5
+interval = 10

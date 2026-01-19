@@ -1,0 +1,21 @@
+# demo-ws-server 基础配置
+
+[app]
+name = "demo-ws-server"
+env = "development"
+port = 8082
+
+[redis]
+host = "localhost"
+port = 6379
+password = ""
+db = 0
+pool_size = 10
+
+[log]
+level = "info"
+format = "console"
+
+[websocket]
+read_buffer_size = 1024
+write_buffer_size = 1024

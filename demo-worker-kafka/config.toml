@@ -1,0 +1,23 @@
+# demo-worker-kafka 基础配置
+
+[app]
+name = "demo-worker-kafka"
+env = "development"
+
+[database]
+host = "localhost"
+port = 3306
+user = "root"
+password = ""
+dbname = "app"
+max_open_conns = 50
+max_idle_conns = 5
+
+[kafka]
+brokers = ["localhost:9092"]
+group_id = "worker-kafka-group"
+topics = ["orders", "notifications"]
+
+[log]
+level = "info"
+format = "console"

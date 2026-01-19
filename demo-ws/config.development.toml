@@ -1,0 +1,7 @@
+# demo-ws-server 开发环境配置
+
+[app]
+env = "development"
+
+[log]
+level = "debug"

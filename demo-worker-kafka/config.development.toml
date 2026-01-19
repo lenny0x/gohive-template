@@ -1,0 +1,10 @@
+# demo-worker-kafka 开发环境配置
+
+[app]
+env = "development"
+
+[database]
+dbname = "app_dev"
+
+[log]
+level = "debug"

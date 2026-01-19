@@ -1,0 +1,17 @@
+# demo-worker-kafka 测试环境配置
+
+[app]
+env = "test"
+
+[database]
+host = "test-db.internal"
+dbname = "app_test"
+user = "test_user"
+
+[kafka]
+brokers = ["test-kafka.internal:9092"]
+group_id = "worker-kafka-test-group"
+
+[log]
+level = "info"
+format = "json"

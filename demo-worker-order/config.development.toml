@@ -1,0 +1,14 @@
+# demo-worker-order 开发环境配置
+
+[app]
+env = "development"
+
+[database]
+dbname = "app_dev"
+
+[log]
+level = "debug"
+
+[worker]
+concurrency = 2
+interval = 5

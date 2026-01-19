@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: app-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: app
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    container_name: app-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: app-kafka
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/bitnami/kafka
+
+  # Demo API Service
+  demo-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app-demo-api
+    command: ["./app", "demo-api", "-c", "/app/demo-api/config.toml"]
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./demo-api/config.toml:/app/demo-api/config.toml
+
+  # Demo gRPC Service
+  demo-grpc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app-demo-grpc
+    command: ["./app", "demo-grpc", "-c", "/app/demo-grpc/config.toml"]
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./demo-grpc/config.toml:/app/demo-grpc/config.toml
+
+  # WebSocket Server
+  demo-ws:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app-demo-ws
+    command: ["./app", "demo-ws", "-c", "/app/demo-ws/config.toml"]
+    ports:
+      - "8082:8082"
+    depends_on:
+      - redis
+    volumes:
+      - ./demo-ws/config.toml:/app/demo-ws/config.toml
+
+  # Kafka Worker
+  demo-worker-kafka:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app-demo-worker-kafka
+    command: ["./app", "demo-worker-kafka", "-c", "/app/demo-worker-kafka/config.toml"]
+    depends_on:
+      - mysql
+      - kafka
+    volumes:
+      - ./demo-worker-kafka/config.toml:/app/demo-worker-kafka/config.toml
+
+  # Order Worker
+  demo-worker-order:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: app-demo-worker-order
+    command: ["./app", "demo-worker-order", "-c", "/app/demo-worker-order/config.toml"]
+    depends_on:
+      - mysql
+      - redis
+    volumes:
+      - ./demo-worker-order/config.toml:/app/demo-worker-order/config.toml
+
+volumes:
+  mysql_data:
+  redis_data:
+  kafka_data:

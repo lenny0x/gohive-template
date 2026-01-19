@@ -1,0 +1,27 @@
+[app]
+name = "demo-grpc"
+env = "development"
+port = 8080
+
+[grpc]
+port = 9090
+
+[database]
+host = "localhost"
+port = 3306
+user = "root"
+password = ""
+dbname = "gohive"
+max_open_conns = 100
+max_idle_conns = 10
+
+[redis]
+host = "localhost"
+port = 6379
+password = ""
+db = 0
+pool_size = 10
+
+[log]
+level = "debug"
+format = "console"
