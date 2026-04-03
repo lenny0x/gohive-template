@@ -12,7 +12,7 @@ import (
 	"github.com/gohive/pkg/kafka"
 )
 
-func NewConsumer(lc fx.Lifecycle) *consumer.Consumer {
+func NewConsumer(lc fx.Lifecycle) {
 	cfg := config.Cfg
 	kafkaCfg := kafka.Config{
 		Brokers: cfg.Kafka.Brokers,
@@ -42,5 +42,4 @@ func NewConsumer(lc fx.Lifecycle) *consumer.Consumer {
 		},
 	})
 
-	return c
 }

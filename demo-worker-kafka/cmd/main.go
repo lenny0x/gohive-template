@@ -26,8 +26,8 @@ func main() {
 	app := fx.New(
 		fx.Provide(
 			fxmodule.NewDatabase,
-			fxmodule.NewConsumer,
 		),
+		fx.Invoke(fxmodule.NewConsumer),
 	)
 
 	app.Run()
