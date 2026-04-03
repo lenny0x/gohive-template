@@ -1,4 +1,4 @@
-package commands
+package main
 
 import (
 	"fmt"
@@ -8,9 +8,9 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "app",
-	Short: "Golang microservices workspace",
-	Long:  `A unified CLI to manage and run multiple microservices.`,
+	Use:   "scripts",
+	Short: "Gohive maintenance scripts",
+	Long:  `A unified CLI to run database migrations, seeders, and one-off data fixes.`,
 }
 
 func Execute() {

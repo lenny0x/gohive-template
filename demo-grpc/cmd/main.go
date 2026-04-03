@@ -1,6 +1,7 @@
-package cmd
+package main
 
 import (
+	"flag"
 	"fmt"
 
 	"go.uber.org/fx"
@@ -13,9 +14,12 @@ import (
 	"github.com/gohive/demo-grpc/service"
 )
 
-func Run(configPath string) {
+func main() {
+	configPath := flag.String("config", "./demo-grpc/config.toml", "path to config file")
+	flag.Parse()
+
 	// Load config
-	if err := config.Load(configPath); err != nil {
+	if err := config.Load(*configPath); err != nil {
 		panic(fmt.Sprintf("failed to load config: %v", err))
 	}
 

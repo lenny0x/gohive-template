@@ -1,30 +1,46 @@
-app_name := "app"
-build_dir := "build"
+# Build all services
+build-all:
+    go build -o demo-api/bin/demo-api                   ./demo-api/cmd
+    go build -o demo-grpc/bin/demo-grpc                 ./demo-grpc/cmd
+    go build -o demo-ws/bin/demo-ws                     ./demo-ws/cmd
+    go build -o demo-worker-kafka/bin/demo-worker-kafka ./demo-worker-kafka/cmd
+    go build -o demo-worker-order/bin/demo-worker-order ./demo-worker-order/cmd
 
-# Build the main binary
-build:
-    @echo "Building {{app_name}}..."
-    @mkdir -p {{build_dir}}
-    go build -o {{build_dir}}/{{app_name}} ./cmd
+# Build a specific service: just build demo-api
+build service:
+    go build -o {{service}}/bin/{{service}} ./{{service}}/cmd
 
-# Run a specific service: just run api-gateway, just run ws-server, etc.
+# Run a specific service: just run demo-api
 run service:
-    go run ./cmd {{service}}
+    go run ./{{service}}/cmd
 
-# Build for Linux amd64
+# Run a specific service with custom config: just run-cfg demo-api ./demo-api/config.development.toml
+run-cfg service config:
+    go run ./{{service}}/cmd -config {{config}}
+
+# --- Scripts ---
+
+# Run a script command: just script migrate, just script seed, just script fix-order
+script +args:
+    go run ./scripts/cmd {{args}}
+
+# Build scripts binary
+build-scripts:
+    go build -o scripts/bin/scripts ./scripts/cmd
+
+# --- Build ---
+
+# Build all services for Linux amd64
 build-linux:
-    @mkdir -p {{build_dir}}
-    GOOS=linux GOARCH=amd64 go build -o {{build_dir}}/{{app_name}}-linux-amd64 ./cmd
-
-# Build for macOS
-build-darwin:
-    @mkdir -p {{build_dir}}
-    GOOS=darwin GOARCH=amd64 go build -o {{build_dir}}/{{app_name}}-darwin-amd64 ./cmd
-    GOOS=darwin GOARCH=arm64 go build -o {{build_dir}}/{{app_name}}-darwin-arm64 ./cmd
+    GOOS=linux GOARCH=amd64 go build -o demo-api/bin/demo-api-linux-amd64                   ./demo-api/cmd
+    GOOS=linux GOARCH=amd64 go build -o demo-grpc/bin/demo-grpc-linux-amd64                 ./demo-grpc/cmd
+    GOOS=linux GOARCH=amd64 go build -o demo-ws/bin/demo-ws-linux-amd64                     ./demo-ws/cmd
+    GOOS=linux GOARCH=amd64 go build -o demo-worker-kafka/bin/demo-worker-kafka-linux-amd64 ./demo-worker-kafka/cmd
+    GOOS=linux GOARCH=amd64 go build -o demo-worker-order/bin/demo-worker-order-linux-amd64 ./demo-worker-order/cmd
 
 # Clean build artifacts
 clean:
-    rm -rf {{build_dir}}
+    rm -rf */bin
 
 # Run tests
 test:

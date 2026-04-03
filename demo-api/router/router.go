@@ -5,11 +5,7 @@ import (
 	"github.com/gohive/demo-api/handler"
 )
 
-func Setup() *gin.Engine {
-	r := gin.New()
-	r.Use(gin.Logger(), gin.Recovery())
-
-	// Health check
+func Register(r *gin.Engine) {
 	healthHandler := handler.NewHealthHandler()
 	r.GET("/health", healthHandler.Check)
 
@@ -19,6 +15,4 @@ func Setup() *gin.Engine {
 		// TODO: Add admin routes
 		_ = v1
 	}
-
-	return r
 }
