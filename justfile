@@ -20,13 +20,37 @@ run-cfg service config:
 
 # --- Scripts ---
 
-# Run a script command: just script migrate, just script seed, just script fix-order
+# Run a script command: just script migrate up, just script seed, etc.
 script +args:
     go run ./scripts/cmd {{args}}
 
 # Build scripts binary
 build-scripts:
     go build -o scripts/bin/scripts ./scripts/cmd
+
+# --- Migrations ---
+
+# Run all pending migrations: just migrate-up
+migrate-up config="./demo-api/config.toml":
+    go run ./scripts/cmd migrate up -c {{config}}
+
+# Rollback last migration: just migrate-down
+migrate-down config="./demo-api/config.toml":
+    go run ./scripts/cmd migrate down -c {{config}}
+
+# Show migration status: just migrate-status
+migrate-status config="./demo-api/config.toml":
+    go run ./scripts/cmd migrate status -c {{config}}
+
+# Create a new migration: just migrate-create add_user_avatar [sql|go]
+migrate-create name type="sql":
+    go run ./scripts/cmd migrate create {{name}} -t {{type}}
+
+# --- Code Generation ---
+
+# Generate query/model code from the live DB schema: just gen
+gen config="./demo-api/config.toml":
+    go run ./scripts/cmd gen -c {{config}}
 
 # --- Build ---
 

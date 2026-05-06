@@ -1,69 +1,61 @@
 package migrate
 
 import (
+	"database/sql"
 	"fmt"
 
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	"github.com/pressly/goose/v3"
 
 	"github.com/gohive/core/config"
 	"github.com/gohive/core/logger"
-	"github.com/gohive/models/entity"
+	dbmysql "github.com/gohive/pkg/mysql"
 )
 
-// Run executes database migrations
-func Run(configPath string) {
+func setup(configPath string) (*sql.DB, error) {
 	cfg, err := config.LoadConfig[config.BaseConfig](configPath)
 	if err != nil {
-		panic(fmt.Sprintf("failed to load config: %v", err))
+		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
-
-	// Init logger
 	logger.Init(cfg.Log.Level, cfg.Log.Format)
 
-	// Connect database
-	db, err := connectDB(cfg.Database)
+	if err := goose.SetDialect("mysql"); err != nil {
+		return nil, fmt.Errorf("failed to set dialect: %w", err)
+	}
+
+	db, err := dbmysql.OpenSQL(cfg.Database)
 	if err != nil {
-		logger.Fatalf("Failed to connect database: %v", err)
+		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
-	defer closeDB(db)
-
-	// Run migrations
-	if err := runMigrations(db); err != nil {
-		logger.Fatalf("Migration failed: %v", err)
-	}
+	return db, nil
 }
 
-func connectDB(cfg config.DatabaseConfig) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DBName)
-	return gorm.Open(mysql.Open(dsn), &gorm.Config{})
-}
-
-func closeDB(db *gorm.DB) {
-	sqlDB, err := db.DB()
+func Up(configPath, migrationsDir string) error {
+	db, err := setup(configPath)
 	if err != nil {
-		return
+		return err
 	}
-	sqlDB.Close()
+	defer db.Close()
+	return goose.Up(db, migrationsDir)
 }
 
-func runMigrations(db *gorm.DB) error {
-	logger.Info("Running database migrations...")
-
-	models := []interface{}{
-		&entity.User{},
-		&entity.Order{},
+func Down(configPath, migrationsDir string) error {
+	db, err := setup(configPath)
+	if err != nil {
+		return err
 	}
+	defer db.Close()
+	return goose.Down(db, migrationsDir)
+}
 
-	for _, model := range models {
-		if err := db.AutoMigrate(model); err != nil {
-			logger.Errorf("Failed to migrate %T: %v", model, err)
-			return err
-		}
-		logger.Infof("Migrated: %T", model)
+func Status(configPath, migrationsDir string) error {
+	db, err := setup(configPath)
+	if err != nil {
+		return err
 	}
+	defer db.Close()
+	return goose.Status(db, migrationsDir)
+}
 
-	logger.Info("Database migrations completed successfully")
-	return nil
+func Create(migrationsDir, name, migrationType string) error {
+	return goose.Create(nil, migrationsDir, name, migrationType)
 }

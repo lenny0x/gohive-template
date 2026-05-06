@@ -7,6 +7,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// defaultConfigPath is the fallback config used by every subcommand when
+// the user does not pass -c. Scripts run from the repo root and need a
+// real, present config file with [database]/[log] sections.
+const defaultConfigPath = "./demo-api/config.toml"
+
 var rootCmd = &cobra.Command{
 	Use:   "scripts",
 	Short: "Gohive maintenance scripts",

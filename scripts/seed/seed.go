@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"time"
 
-	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
 	"github.com/gohive/core/config"
 	"github.com/gohive/core/logger"
 	"github.com/gohive/models/entity"
+	dbmysql "github.com/gohive/pkg/mysql"
 )
 
 // Options for seed command
@@ -18,41 +18,21 @@ type Options struct {
 	Force      bool // Force re-seed even if data exists
 }
 
-// Run executes database seeding
-func Run(opts Options) {
+// Run executes database seeding.
+func Run(opts Options) error {
 	cfg, err := config.LoadConfig[config.BaseConfig](opts.ConfigPath)
 	if err != nil {
-		panic(fmt.Sprintf("failed to load config: %v", err))
+		return fmt.Errorf("failed to load config: %w", err)
 	}
-
-	// Init logger
 	logger.Init(cfg.Log.Level, cfg.Log.Format)
 
-	// Connect database
-	db, err := connectDB(cfg.Database)
+	db, err := dbmysql.OpenGorm(cfg.Database)
 	if err != nil {
-		logger.Fatalf("Failed to connect database: %v", err)
+		return fmt.Errorf("failed to connect database: %w", err)
 	}
-	defer closeDB(db)
+	defer dbmysql.CloseGorm(db)
 
-	// Run seeder
-	if err := runSeeder(db, opts.Force); err != nil {
-		logger.Fatalf("Seeding failed: %v", err)
-	}
-}
-
-func connectDB(cfg config.DatabaseConfig) (*gorm.DB, error) {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		cfg.User, cfg.Password, cfg.Host, cfg.Port, cfg.DBName)
-	return gorm.Open(mysql.Open(dsn), &gorm.Config{})
-}
-
-func closeDB(db *gorm.DB) {
-	sqlDB, err := db.DB()
-	if err != nil {
-		return
-	}
-	sqlDB.Close()
+	return runSeeder(db, opts.Force)
 }
 
 func runSeeder(db *gorm.DB, force bool) error {
@@ -83,7 +63,9 @@ func seedUsers(db *gorm.DB, force bool) error {
 
 	if force && count > 0 {
 		logger.Warn("Force mode: clearing existing users")
-		db.Exec("TRUNCATE TABLE users")
+		if err := db.Exec("TRUNCATE TABLE users").Error; err != nil {
+			return fmt.Errorf("failed to truncate users: %w", err)
+		}
 	}
 
 	users := []entity.User{
@@ -112,8 +94,7 @@ func seedUsers(db *gorm.DB, force bool) error {
 
 	for _, user := range users {
 		if err := db.Create(&user).Error; err != nil {
-			logger.Errorf("Failed to seed user %s: %v", user.Username, err)
-			return err
+			return fmt.Errorf("failed to seed user %s: %w", user.Username, err)
 		}
 		logger.Infof("Seeded user: %s", user.Username)
 	}
@@ -134,7 +115,9 @@ func seedOrders(db *gorm.DB, force bool) error {
 
 	if force && count > 0 {
 		logger.Warn("Force mode: clearing existing orders")
-		db.Exec("TRUNCATE TABLE orders")
+		if err := db.Exec("TRUNCATE TABLE orders").Error; err != nil {
+			return fmt.Errorf("failed to truncate orders: %w", err)
+		}
 	}
 
 	orders := []entity.Order{
@@ -156,8 +139,7 @@ func seedOrders(db *gorm.DB, force bool) error {
 
 	for _, order := range orders {
 		if err := db.Create(&order).Error; err != nil {
-			logger.Errorf("Failed to seed order %s: %v", order.OrderNo, err)
-			return err
+			return fmt.Errorf("failed to seed order %s: %w", order.OrderNo, err)
 		}
 		logger.Infof("Seeded order: %s", order.OrderNo)
 	}
